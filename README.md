@@ -3,7 +3,7 @@
 To run this project, you’ll need Node.js (v16.0.0 or higher) and PostgreSQL (v14.0.0 or higher).
 
 Start by cloning the repository locally. In your terminal, type:
-git clone https://github.com/cabrinilm/my-nc-news
+git clone https://github.com/cabrinilm/my-nc-news.git
 
 Next, install the dependencies listed in the package.json file by running:
 npm install

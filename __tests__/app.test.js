@@ -27,7 +27,44 @@ describe("GET /api", () => {
       .get("/api")
       .expect(200)
       .then(({ body: { endpoints } }) => {
+  
         expect(endpoints).toEqual(endpointsJson);
       });
   });
 });
+
+
+describe('Potential errors when requesting API', () => {
+
+  test('404: Responds with error if endpoint is not available', () => {
+    return request(app)
+    .get('/api/nope')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.error).toBe('Endpoint not found');
+    });
+  });
+  
+ })
+
+
+
+
+
+
+describe('GET /api/topics', () => {
+  test('200: Responds an array of topic objects ', () => {
+    return request(app)
+    .get('/api/topics')
+    .expect(200)
+    .then((response) => {
+    const body = response.body
+    expect(body.topics).toBeInstanceOf(Array)
+    expect(body.topics.length).toBe(3)
+    body.topics.forEach((topic) => {
+      expect(typeof topic.description).toBe('string')
+    })
+    })
+  })
+
+})
