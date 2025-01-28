@@ -1,10 +1,10 @@
 
-const {getEndpoints} = require('../model/api.model');
+const {fetchEndpoints} = require('../model/api.model');
 
 
 const getApiEndpoins = (req, res, next) => {
  
-    getEndpoints()
+    fetchEndpoints()
     .then((endpoints) => {
         res.status(200).send({endpoints});
     })

@@ -1,7 +1,7 @@
 const db = require('../db/connection');
 const format = require('pg-format');
 
-const getAllTopics = () => {
+const fetchAllTopics = () => {
   
   return db.query('SELECT * from topics')
     .then(result => {
@@ -9,4 +9,4 @@ const getAllTopics = () => {
     });
 };
 
-module.exports = { getAllTopics };
+module.exports = { fetchAllTopics };
