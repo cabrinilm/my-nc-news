@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-const getEndpoints = () => {
+const fetchEndpoints = () => {
 
  const filePath = path.join(__dirname, '../endpoints.json');
  return fs.readFile(filePath, 'utf-8')
@@ -10,4 +10,4 @@ const getEndpoints = () => {
 };
 
 
-module.exports = {getEndpoints};
+module.exports = {fetchEndpoints};
