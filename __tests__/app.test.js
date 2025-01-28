@@ -7,8 +7,7 @@ const app = require("../app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
-require("jest-sorted")
-
+require("jest-sorted");
 
 /* Set up your beforeEach & afterAll functions here */
 
@@ -31,7 +30,6 @@ describe("GET /api", () => {
   });
 });
 
-
 describe("GET /api/topics", () => {
   test("200: Responds an array of topic objects ", () => {
     return request(app)
@@ -49,7 +47,7 @@ describe("GET /api/topics", () => {
         });
       });
   });
-  test("404: Responds with error if endpoint is not available in topics", () => {
+  test("404: Responds with an error if endpoint is not available in topics", () => {
     return request(app)
       .get("/api/nope")
       .expect(404)
@@ -79,7 +77,7 @@ describe("GET /api/articles/:articles_id", () => {
         });
       });
   });
-  test("404: Responds with error if the id is not available in articles", () => {
+  test("404: Responds with an error if the id is not available in articles", () => {
     return request(app)
       .get("/api/articles/200")
       .expect(500)
@@ -87,7 +85,7 @@ describe("GET /api/articles/:articles_id", () => {
         expect(response.body.error).toBe("Internal Server Error");
       });
   });
- 
+
   test("404: Responds with error if the id is invalid in articles", () => {
     return request(app)
       .get("/api/articles/letter")
@@ -96,47 +94,88 @@ describe("GET /api/articles/:articles_id", () => {
         expect(response.body.msg).toBe("Bad Request - Invalid ID type");
       });
   });
-
 });
 
 describe("GET /api/articles", () => {
-test("200: Responds with an array of all articles", () => {
-  return request(app)
-    .get('/api/articles')
-    .expect(200)
-    .then(({ body }) => {
-      expect(body.articles.length).toBeGreaterThan(1)
-      body.articles.forEach((article) => {
-        expect(article).toMatchObject({
-          article_id: expect.any(Number),
-          title: expect.any(String),
-          author: expect.any(String),
-          topic: expect.any(String),
-          created_at: expect.any(String),
-          votes: expect.any(Number),
-          article_img_url: expect.any(String),
-          comment_count: expect.any(Number),
+  test("200: Responds with an array of all articles", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBeGreaterThan(1);
+        expect(body.articles.length).toBe(13)
+        body.articles.forEach((article) => {
+          expect(article).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            author: expect.any(String),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
         });
       });
-    });
   });
   test("200: Responds with articles  sorted by date in descending order by defult", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
-        console.log(body)
         expect(body.articles).toBeSortedBy("created_at", { descending: true });
       });
+  });
+
+  test("200: Responds with articles sorted by date in descending order when specified", () => {
+    return request(app)
+      .get("/api/articles?sort_by=created_at&order=desc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
 });
 
-test("200: Responds with articles sorted by date in descending order when specified", () => {
-  return request(app)
-    .get("/api/articles?sort_by=created_at&order=desc")
-    .expect(200)
-    .then(({ body }) => {
-  
-      expect(body.articles).toBeSortedBy("created_at", { descending: true });
-    });
-});
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: Responds with all comments on an article", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments.length).toBe(11);
+        expect(body.comments).toBeSortedBy("created_at", { descending: true });
+        body.comments.forEach((comment) => {
+          expect(comment).toHaveProperty("comment_id");
+          expect(comment).toHaveProperty("votes");
+          expect(comment).toHaveProperty("created_at");
+          expect(comment).toHaveProperty("body");
+          expect(comment).toHaveProperty("article_id");
+        });
+        expect(body.comments[0]).toEqual({
+          comment_id: 5,
+          votes: 0,
+          created_at: "2020-11-03T21:00:00.000Z",
+          author: "icellusedkars",
+          body: "I hate streaming noses",
+          article_id: 1,
+        });
+      });
+  });
+  test("404: Responds with an error if the article does not exist", () => {
+    return request(app)
+      .get("/api/articles/1444/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.error).toBe("Article not found");
+      });
+  });
+  test("400: Responds with an error if the id is invalid type of data", () => {
+    return request(app)
+      .get("/api/articles/letter/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request - Invalid ID type");
+      });
+  });
 });
