@@ -10,6 +10,7 @@ const {
   postComment,
   patchArticlesById
 } = require("./controllers/articles.controller");
+const { deleteCommentById } = require("./controllers/comments.controller")
 app.use(express.json());
 
 app.get("/api", getApiEndpoins);
@@ -24,6 +25,7 @@ app.post("/api/articles/:article_id/comments", postComment)
 
 app.patch("/api/articles/:article_id", patchArticlesById)
 
+app.delete("/api/comments/:comment_id", deleteCommentById)
 
 
 app.use((err, req, res, next) => {
