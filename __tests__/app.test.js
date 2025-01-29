@@ -36,8 +36,8 @@ describe("GET /api/topics", () => {
     return request(app)
       .get("/api/topics")
       .expect(200)
-      .then((response) => {
-        const body = response.body;
+      .then(({body}) => {
+        
         expect(body.topics).toBeInstanceOf(Array);
         expect(body.topics.length).toBe(3);
         body.topics.forEach((topic) => {
@@ -52,8 +52,8 @@ describe("GET /api/topics", () => {
     return request(app)
       .get("/api/nope")
       .expect(404)
-      .then((response) => {
-        expect(response.body.error).toBe("Endpoint not found");
+      .then(({body}) => {
+        expect(body.error).toBe("Endpoint not found");
       });
   });
 });
@@ -63,8 +63,7 @@ describe("GET /api/articles/:articles_id", () => {
     return request(app)
       .get("/api/articles/1")
       .expect(200)
-      .then((response) => {
-        const body = response.body;
+      .then(({body}) => {
         expect(body.articles).toEqual({
           article_id: 1,
           title: "Living in the shadow of a great man",
@@ -82,8 +81,8 @@ describe("GET /api/articles/:articles_id", () => {
     return request(app)
       .get("/api/articles/200")
       .expect(500)
-      .then((response) => {
-        expect(response.body.error).toBe("Internal Server Error");
+      .then(({body}) => {
+        expect(body.error).toBe("Internal Server Error");
       });
   });
 
@@ -91,8 +90,8 @@ describe("GET /api/articles/:articles_id", () => {
     return request(app)
       .get("/api/articles/letter")
       .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe("Bad Request - Invalid ID type");
+      .then(({body}) => {
+        expect(body.msg).toBe("Bad Request - Invalid ID type");
       });
   });
 });
@@ -202,11 +201,11 @@ describe("POST /api/articles/:article_id/comments", () => {
         "body": "Hey buy&hold."
       })
       .expect(201)  
-      .then((res) => {
-        expect(res.body.comment).toBeDefined();  
-        expect(res.body.comment.comment_id).toBe(19);  
-        expect(res.body.comment.author).toBe("icellusedkars");  
-        expect(res.body.comment.body).toBe("Hey buy&hold.");  
+      .then(({body}) => {
+        expect(body.comment).toBeDefined();  
+        expect(body.comment.comment_id).toBe(19);  
+        expect(body.comment.author).toBe("icellusedkars");  
+        expect(body.comment.body).toBe("Hey buy&hold.");  
       });
   });
   test("400: Responds with an error if the username is missing", () => {
@@ -216,8 +215,8 @@ describe("POST /api/articles/:article_id/comments", () => {
         "body": "Hey buy&hold." 
       })
       .expect(400) 
-      .then((res) => {
-        expect(res.body.error).toBe('Bad Request'); 
+      .then(({body}) => {
+        expect(body.error).toBe('Bad Request'); 
       });
   });
   test("400: Responds with an error if the body is missing", () => {
@@ -229,8 +228,8 @@ describe("POST /api/articles/:article_id/comments", () => {
           
       })
       .expect(400) 
-      .then((res) => {
-        expect(res.body.error).toBe('Bad Request'); 
+      .then(({body}) => {
+        expect(body.error).toBe('Bad Request'); 
       });
   });
   test("400: Responds with an error when data is not passed", () => {
@@ -240,8 +239,8 @@ describe("POST /api/articles/:article_id/comments", () => {
       
       })
       .expect(400) 
-      .then((res) => {
-        expect(res.body.error).toBe('Bad Request'); 
+      .then(({body}) => {
+        expect(body.error).toBe('Bad Request'); 
       });
   });
   test("400: Responds with an error when the id is invalid", () => {
@@ -252,8 +251,8 @@ describe("POST /api/articles/:article_id/comments", () => {
         "body": "Hey buy&hold."
       })
       .expect(400) 
-      .then((res) => {
-        expect(res.body.msg).toBe('Bad Request - Invalid ID type'); 
+      .then(({body}) => {
+        expect(body.msg).toBe('Bad Request - Invalid ID type'); 
       });
   });
   test("400: Responds with an error when the id is valid but non-existent on article_id", () => {
@@ -264,9 +263,9 @@ describe("POST /api/articles/:article_id/comments", () => {
           "body": "Hey buy&hold."
       })
       .expect(404) 
-      .then((res) => {
+      .then(({body}) => {
       
-        expect(res.body.error).toBe('Article not found'); 
+        expect(body.error).toBe('Article not found'); 
       });
   });
 });
@@ -280,10 +279,10 @@ describe("PATCH /api/articles/:article_id", () => {
     inc_votes : 50
   })
   .expect(200)
-  .then((res) => {    
+  .then(({body}) => {    
   
-    expect(res.body.article.votes).toBe(150)
-    expect(res.body.article).toEqual(
+    expect(body.article.votes).toBe(150)
+    expect(body.article).toEqual(
     expect.objectContaining({
       article_id: expect.any(Number),
       title: expect.any(String),
@@ -304,10 +303,10 @@ test("200: Responds with the article and vote updated when the vote is negative"
     inc_votes : -40
   })
   .expect(200)
-  .then((res) => {    
-  
-    expect(res.body.article.votes).toBe(60)
-    expect(res.body.article).toEqual(
+  .then(({body}) => {    
+
+    expect(body.article.votes).toBe(60)
+    expect(body.article).toEqual(
     expect.objectContaining({
       article_id: expect.any(Number),
       title: expect.any(String),
@@ -329,8 +328,8 @@ test("404: Responds with an error when the id is not available", () => {
     inc_votes : 5
   })
   .expect(404)
-  .then((res) => {   
-      expect(res.body.error).toBe('Article not found')
+  .then(({body}) => {   
+      expect(body.error).toBe('Article not found')
   });
 });
 test("400: Responds with an error when vote is not a number but the id exist", () => {
@@ -340,9 +339,9 @@ test("400: Responds with an error when vote is not a number but the id exist", (
     inc_votes : 'letter'
   })
   .expect(400)
-  .then((res) => {   
+  .then(({body}) => {   
     
-      expect(res.body.error).toBe('Bad Request')
+      expect(body.error).toBe('Bad Request')
   });
 });
 test("400: Responds with an error when vote is empty", () => {
@@ -350,10 +349,35 @@ test("400: Responds with an error when vote is empty", () => {
   .patch("/api/articles/1")
   .send({})
   .expect(400)
-  .then((res) => {   
+  .then(({body}) => {   
     
-      expect(res.body.error).toBe('Bad Request')
+      expect(body.error).toBe('Bad Request')
   });
 });
+});
 
+
+describe(`DELETE /api/comments/comment_id`, () => {
+ test("204: Responds with the correct status for successful", () => {
+ return request(app)
+ .delete('/api/comments/1')
+ .expect(204)
+});
+test("404: Responds with error when comment_id does not exist", () => {
+  return request(app)
+  .delete('/api/comments/1235812')
+  .expect(404)
+  .then(({body}) => {
+   
+    expect(body.error).toBe('Comment not found')
+  });
+});
+test("404:Responde with an error when comment_id is invalid type of data", () => {
+  return request(app)
+  .delete("/api/comments/hey")
+  .expect(400)
+  .then(({body}) => {
+     expect(body.msg).toBe('Bad Request - Invalid ID type')
+  });
+})
 });
