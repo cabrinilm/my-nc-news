@@ -7,6 +7,7 @@ const app = require("../app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
+const { string } = require("pg-format");
 require("jest-sorted");
 
 /* Set up your beforeEach & afterAll functions here */
@@ -268,6 +269,91 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(res.body.error).toBe('Article not found'); 
       });
   });
+});
 
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: Responds with the article and vote updated", () => {
+  return request(app)
+  .patch("/api/articles/1")
+  .send({
+    inc_votes : 50
+  })
+  .expect(200)
+  .then((res) => {    
+  
+    expect(res.body.article.votes).toBe(150)
+    expect(res.body.article).toEqual(
+    expect.objectContaining({
+      article_id: expect.any(Number),
+      title: expect.any(String),
+      topic: expect.any(String),
+      author: expect.any(String),
+      body: expect.any(String),
+      created_at: expect.any(String),
+      votes: expect.any(Number),
+      article_img_url: expect.any(String),
+    })
+  );
+  });
+});
+test("200: Responds with the article and vote updated when the vote is negative", () => {
+  return request(app)
+  .patch("/api/articles/1")
+  .send({
+    inc_votes : -40
+  })
+  .expect(200)
+  .then((res) => {    
+  
+    expect(res.body.article.votes).toBe(60)
+    expect(res.body.article).toEqual(
+    expect.objectContaining({
+      article_id: expect.any(Number),
+      title: expect.any(String),
+      topic: expect.any(String),
+      author: expect.any(String),
+      body: expect.any(String),
+      created_at: expect.any(String),
+      votes: expect.any(Number),
+      article_img_url: expect.any(String),
+    })
+  );
+  });
+});
+
+test("404: Responds with an error when the id is not available", () => {
+  return request(app)
+  .patch("/api/articles/1000")
+  .send({
+    inc_votes : 5
+  })
+  .expect(404)
+  .then((res) => {   
+      expect(res.body.error).toBe('Article not found')
+  });
+});
+test("400: Responds with an error when vote is not a number but the id exist", () => {
+  return request(app)
+  .patch("/api/articles/1")
+  .send({
+    inc_votes : 'letter'
+  })
+  .expect(400)
+  .then((res) => {   
+    
+      expect(res.body.error).toBe('Bad Request')
+  });
+});
+test("400: Responds with an error when vote is empty", () => {
+  return request(app)
+  .patch("/api/articles/1")
+  .send({})
+  .expect(400)
+  .then((res) => {   
+    
+      expect(res.body.error).toBe('Bad Request')
+  });
+});
 
 });
