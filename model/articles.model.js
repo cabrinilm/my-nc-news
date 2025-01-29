@@ -63,12 +63,52 @@ ORDER BY created_at DESC;
 `;
 
   return db.query(sqlQuery, [article_id]).then(({ rows }) => {
-    if (rows.length) {
+    if (rows.length > 0) {
       return rows;
     } else {
-      return Promise.reject({ status: 404, message: "Article not found" });
+     return db.query(`SELECT 1 FROM articles WHERE article_id = $1;`, [article_id])
+     .then(({rowCount}) => {
+      if(rowCount === 0) {
+        return Promise.reject({status: 404, message: "Article not found"});
+      }
+      return [];
+     })
     }
   });
-};
+}
 
-module.exports = { fetchArticle, fetchArticleById, fetchCommentsFromArticles };
+const addComment = (article_id, { username, body }) => {
+  if (!username || !body) {
+    return Promise.reject({ status: 400, message: "Bad Request" });
+  }
+
+  const checkArticleExistsQuery = `
+    SELECT 1 FROM articles WHERE article_id = $1;
+  `;
+
+  return db
+    .query(checkArticleExistsQuery, [article_id])
+    .then(({ rowCount }) => {
+      if (rowCount === 0) {
+        return Promise.reject({ status: 404, message: "Article not found" });
+      }
+
+      const sqlQuery = `
+    INSERT INTO comments (article_id, author, body)
+    VALUES ($1, $2, $3)
+    RETURNING comment_id, votes, created_at, author, body, article_id
+    `;
+
+      return db
+        .query(sqlQuery, [article_id, username, body])
+        .then(({ rows }) => {
+          return rows[0];
+        });
+    });
+};
+module.exports = {
+  fetchArticle,
+  fetchArticleById,
+  fetchCommentsFromArticles,
+  addComment,
+};

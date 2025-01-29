@@ -146,13 +146,16 @@ describe("GET /api/articles/:article_id/comments", () => {
         expect(body.comments.length).toBe(11);
         expect(body.comments).toBeSortedBy("created_at", { descending: true });
         body.comments.forEach((comment) => {
+          
           expect(comment).toHaveProperty("comment_id");
           expect(comment).toHaveProperty("votes");
           expect(comment).toHaveProperty("created_at");
           expect(comment).toHaveProperty("body");
           expect(comment).toHaveProperty("article_id");
         });
+        
         expect(body.comments[0]).toEqual({
+        
           comment_id: 5,
           votes: 0,
           created_at: "2020-11-03T21:00:00.000Z",
@@ -178,4 +181,93 @@ describe("GET /api/articles/:article_id/comments", () => {
         expect(body.msg).toBe("Bad Request - Invalid ID type");
       });
   });
+  test("200: Responds with an empty array if the article exists but does not have comments", () => {
+  return request(app)
+  .get("/api/articles/7/comments")
+  .expect(200)
+  .then(({ body }) => {
+    expect(body.comments).toEqual([]);
+  });
+});
+});
+
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: Responds with the comment added", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        "username": "icellusedkars",
+        "body": "Hey buy&hold."
+      })
+      .expect(201)  
+      .then((res) => {
+        expect(res.body.comment).toBeDefined();  
+        expect(res.body.comment.comment_id).toBe(19);  
+        expect(res.body.comment.author).toBe("icellusedkars");  
+        expect(res.body.comment.body).toBe("Hey buy&hold.");  
+      });
+  });
+  test("400: Responds with an error if the username is missing", () => {
+    return request(app)
+      .post("/api/articles/1/comments") 
+      .send({
+        "body": "Hey buy&hold." 
+      })
+      .expect(400) 
+      .then((res) => {
+        expect(res.body.error).toBe('Bad Request'); 
+      });
+  });
+  test("400: Responds with an error if the body is missing", () => {
+    return request(app)
+      .post("/api/articles/1/comments") 
+      .send({
+
+        "username": "icellusedkars",
+          
+      })
+      .expect(400) 
+      .then((res) => {
+        expect(res.body.error).toBe('Bad Request'); 
+      });
+  });
+  test("400: Responds with an error when data is not passed", () => {
+    return request(app)
+      .post("/api/articles/1/comments") 
+      .send({
+      
+      })
+      .expect(400) 
+      .then((res) => {
+        expect(res.body.error).toBe('Bad Request'); 
+      });
+  });
+  test("400: Responds with an error when the id is invalid", () => {
+    return request(app)
+      .post("/api/articles/wrong/comments") 
+      .send({
+          "username": "icellusedkars",
+        "body": "Hey buy&hold."
+      })
+      .expect(400) 
+      .then((res) => {
+        expect(res.body.msg).toBe('Bad Request - Invalid ID type'); 
+      });
+  });
+  test("400: Responds with an error when the id is valid but non-existent on article_id", () => {
+    return request(app)
+      .post("/api/articles/12358/comments") 
+      .send({
+          "username": "icellusedkars",
+          "body": "Hey buy&hold."
+      })
+      .expect(404) 
+      .then((res) => {
+      
+        expect(res.body.error).toBe('Article not found'); 
+      });
+  });
+
+
 });
