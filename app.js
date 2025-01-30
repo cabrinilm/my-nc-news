@@ -3,6 +3,7 @@ const app = express();
 
 const { getTopics } = require("./controllers/topics.controllers");
 const { getApiEndpoins } = require("./controllers/api.controller");
+const { getUsers } = require("./controllers/users.controller")
 const {
   getArticlesById,
   getAllArticles,
@@ -17,6 +18,9 @@ app.get("/api", getApiEndpoins);
 
 app.get("/api/topics", getTopics);
 
+
+app.get("/api/users",  getUsers)
+
 app.get("/api/articles", getAllArticles);
 app.get("/api/articles/:article_id", getArticlesById);
 app.get("/api/articles/:article_id/comments", getCommentsFromArticles);
@@ -26,6 +30,8 @@ app.post("/api/articles/:article_id/comments", postComment)
 app.patch("/api/articles/:article_id", patchArticlesById)
 
 app.delete("/api/comments/:comment_id", deleteCommentById)
+
+
 
 
 app.use((err, req, res, next) => {

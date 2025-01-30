@@ -7,7 +7,6 @@ const app = require("../app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
-const { string } = require("pg-format");
 require("jest-sorted");
 
 /* Set up your beforeEach & afterAll functions here */
@@ -280,7 +279,7 @@ describe("PATCH /api/articles/:article_id", () => {
   })
   .expect(200)
   .then(({body}) => {    
-  
+     console.log(body.article)
     expect(body.article.votes).toBe(150)
     expect(body.article).toEqual(
     expect.objectContaining({
@@ -380,4 +379,59 @@ test("404:Responde with an error when comment_id is invalid type of data", () =>
      expect(body.msg).toBe('Bad Request - Invalid ID type')
   });
 })
+});
+
+
+describe("GET /api/users ", () => {
+ test("200: Responds with the list of all users", () => {
+   return request(app)
+   .get('/api/users')
+   .expect(200)
+   .then(({body}) => {
+     expect(body.users).toHaveLength(4);
+
+     const usersDb = [
+      {
+        username: "butter_bridge",
+        name: "jonny",
+        avatar_url:
+          "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+      },
+      {
+        username: "icellusedkars",
+        name: "sam",
+        avatar_url:
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+      },
+      {
+        username: "rogersop",
+        name: "paul",
+        avatar_url:
+          "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
+      },
+      {
+        username: "lurker",
+        name: "do_nothing",
+        avatar_url:
+          "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
+      },
+    ];
+       
+    usersDb.forEach(user => {
+       
+      expect(body.users).toContainEqual(user)
+
+    });
+  
+   });
+ });
+ test("404: Responds with an error if endpoint is not available in users ", () => {
+    return request(app)
+    .get("/api/ctbnoom")
+    .expect(404)
+    .then(({body}) => {
+      
+      expect(body.error).toBe("Endpoint not found")
+    });
+ });
 });
