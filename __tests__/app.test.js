@@ -279,7 +279,7 @@ describe("PATCH /api/articles/:article_id", () => {
   })
   .expect(200)
   .then(({body}) => {    
-     console.log(body.article)
+    
     expect(body.article.votes).toBe(150)
     expect(body.article).toEqual(
     expect.objectContaining({
