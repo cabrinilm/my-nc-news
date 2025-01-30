@@ -12,38 +12,56 @@ const fetchArticleById = (id) => {
     });
 };
 
-const fetchArticle = ({ sort_by = "created_at", order = "desc" }) => {
-  const validSortBy = ["created_at"];
+const fetchArticle = ({ sort_by = "created_at", order = "desc", topic }) => {
+  const validSortBy = ["created_at", "topic"];
   const validOrderBy = ["asc", "desc"];
 
-  if (!validSortBy.includes(sort_by)) {
-    return Promise.reject({ status: 400, msg: "Bad Request" });
-  }
-
-  if (!validOrderBy.includes(order)) {
-    return Promise.reject({ status: 400, msg: "Bad Request" });
+  if (!validSortBy.includes(sort_by) || !validOrderBy.includes(order)) {
+    return Promise.reject({
+      status: 400,
+      message: "Bad Request - Invalid query parameters",
+    });
   }
 
   let sqlQuery = `
-SELECT 
-articles.article_id,
-articles.author,
-articles.title,
-articles.topic,
-articles.created_at,
-articles.votes,
-articles.article_img_url,
-CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
-FROM articles
-LEFT JOIN comments ON comments.article_id = articles.article_id
-`;
+    SELECT 
+      articles.article_id,
+      articles.author,
+      articles.title,
+      articles.topic,
+      articles.created_at,
+      articles.votes,
+      articles.article_img_url,
+      CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
+    FROM articles
+    LEFT JOIN comments ON comments.article_id = articles.article_id
+  `;
 
-  sqlQuery += `
-GROUP by articles.article_id
-ORDER BY ${sort_by} ${order};
-`;
-  return db.query(sqlQuery).then(({ rows }) => {
-    return rows;
+  const queryValues = [];
+
+  const checkTopicExistsQuery = `SELECT 1 FROM topics WHERE slug = $1;`;
+
+  const checkTopicPromise = topic
+    ? db.query(checkTopicExistsQuery, [topic]).then(({ rowCount }) => {
+        if (rowCount === 0) {
+          return Promise.reject({ status: 404, message: "Topic not found" });
+        }
+      })
+    : Promise.resolve();
+
+  return checkTopicPromise.then(() => {
+    if (topic) {
+      sqlQuery += ` WHERE articles.topic = $1`;
+      queryValues.push(topic);
+    }
+
+    sqlQuery += `
+      GROUP BY articles.article_id
+      ORDER BY ${validSortBy.includes(sort_by) ? sort_by : "created_at"} 
+      ${validOrderBy.includes(order) ? order : "desc"};
+    `;
+
+    return db.query(sqlQuery, queryValues).then(({ rows }) => rows);
   });
 };
 
