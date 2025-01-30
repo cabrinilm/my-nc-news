@@ -416,8 +416,8 @@ describe("GET /api/users ", () => {
           expect(user).toHaveProperty("name");
           expect(user).toHaveProperty("avatar_url");
           expect(typeof user.username).toBe('string');
-          expect(typeof user.name).toBe('string')
-          expect(typeof user.avatar_url).toBe('string')
+          expect(typeof user.name).toBe('string');
+          expect(typeof user.avatar_url).toBe('string');
         });
       });
   });
