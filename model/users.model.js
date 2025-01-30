@@ -1,26 +1,14 @@
 const db = require("../db/connection");
 
-
-
 const fetchUsers = () => {
-      
-
-
-    const sqlQuery = 
-    `
+  const sqlQuery = `
     SELECT * FROM users;
     
     `;
 
+  return db.query(sqlQuery).then(({ rows }) => {
+    return rows;
+  });
+};
 
-    return db.query(sqlQuery)
-    .then(({rows}) => {
-        return rows;
-    });
-
-
-
-}
-
-
-module.exports = {fetchUsers};
+module.exports = { fetchUsers };
