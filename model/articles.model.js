@@ -12,7 +12,7 @@ const fetchArticleById = (id) => {
     });
 };
 
-const fetchArticle = (sort_by = "created_at", order = "desc") => {
+const fetchArticle = ({ sort_by = "created_at", order = "desc" }) => {
   const validSortBy = ["created_at"];
   const validOrderBy = ["asc", "desc"];
 
@@ -23,7 +23,6 @@ const fetchArticle = (sort_by = "created_at", order = "desc") => {
   if (!validOrderBy.includes(order)) {
     return Promise.reject({ status: 400, msg: "Bad Request" });
   }
-  const queryValues = [];
 
   let sqlQuery = `
 SELECT 
@@ -43,7 +42,7 @@ LEFT JOIN comments ON comments.article_id = articles.article_id
 GROUP by articles.article_id
 ORDER BY ${sort_by} ${order};
 `;
-  return db.query(sqlQuery, queryValues).then(({ rows }) => {
+  return db.query(sqlQuery).then(({ rows }) => {
     return rows;
   });
 };
@@ -66,77 +65,78 @@ ORDER BY created_at DESC;
     if (rows.length > 0) {
       return rows;
     } else {
-     return db.query(`SELECT 1 FROM articles WHERE article_id = $1;`, [article_id])
-     .then(({rowCount}) => {
-      if(rowCount === 0) {
-        return Promise.reject({status: 404, message: "Article not found"});
-      }
-      return [];
-     })
+      return db
+        .query(`SELECT 1 FROM articles WHERE article_id = $1;`, [article_id])
+        .then(({ rowCount }) => {
+          if (rowCount === 0) {
+            return Promise.reject({
+              status: 404,
+              message: "Article not found",
+            });
+          }
+          return [];
+        });
     }
   });
-}
+};
 
 const addComment = (article_id, { username, body }) => {
   if (!username || !body) {
     return Promise.reject({ status: 400, message: "Bad Request" });
   }
 
-  const checkArticleExistsQuery = `
-    SELECT 1 FROM articles WHERE article_id = $1;
-  `;
+  const checkUserExistsQuery = `
+        SELECT 1 FROM users WHERE username = $1;
+      `;
 
-  return db
-    .query(checkArticleExistsQuery, [article_id])
-    .then(({ rowCount }) => {
-      if (rowCount === 0) {
-        return Promise.reject({ status: 404, message: "Article not found" });
-      }
+  return db.query(checkUserExistsQuery, [username]).then(({ rowCount }) => {
+    if (rowCount === 0) {
+      return Promise.reject({ status: 404, message: "Username not found" });
+    }
 
-      const sqlQuery = `
-    INSERT INTO comments (article_id, author, body)
-    VALUES ($1, $2, $3)
-    RETURNING comment_id, votes, created_at, author, body, article_id
-    `;
+    const sqlQuery = `
+            INSERT INTO comments (article_id, author, body)
+            VALUES ($1, $2, $3)
+            RETURNING comment_id, votes, created_at, author, body, article_id
+          `;
 
-      return db
-        .query(sqlQuery, [article_id, username, body])
-        .then(({ rows }) => {
-          return rows[0];
-        });
-    });
+    return db
+      .query(sqlQuery, [article_id, username, body])
+      .then(({ rows }) => {
+        return rows[0];
+      })
+      .catch((err) => {
+        if (err.code === "23503") {
+          return Promise.reject({ status: 404, message: "Article not found" });
+        }
+        return Promise.reject(err);
+      });
+  });
 };
 
-
-const updateArticlesById = (article_id, {inc_votes}) => {
-  
+const updateArticlesById = (article_id, { inc_votes }) => {
   if (inc_votes === undefined || typeof inc_votes !== "number") {
     return Promise.reject({ status: 400, message: "Bad Request" });
   }
 
-
-
-  const sqlQuery =
-  `
+  const sqlQuery = `
   UPDATE articles
   SET  votes =  votes + $1
   WHERE article_id = $2
   returning *;  
   `;
-return db.query(sqlQuery, [inc_votes, article_id])
-.then(({rows}) => {
-  if(rows.length === 0){
-    return Promise.reject({status: 404, message: "Article not found"});
-  }
-  return rows[0]
-});
+  return db.query(sqlQuery, [inc_votes, article_id]).then(({ rows }) => {
+    if (rows.length === 0) {
+      return Promise.reject({ status: 404, message: "Article not found" });
+    }
+    return rows[0];
+  });
 };
-
 
 module.exports = {
   fetchArticle,
   fetchArticleById,
   fetchCommentsFromArticles,
   addComment,
-  updateArticlesById
+  updateArticlesById,
 };
