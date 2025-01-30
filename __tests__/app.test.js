@@ -415,9 +415,9 @@ describe("GET /api/users ", () => {
           expect(user).toHaveProperty("username");
           expect(user).toHaveProperty("name");
           expect(user).toHaveProperty("avatar_url");
-          expect(typeof user.username).toBe('string');
-          expect(typeof user.name).toBe('string');
-          expect(typeof user.avatar_url).toBe('string');
+          expect(typeof user.username).toBe("string");
+          expect(typeof user.name).toBe("string");
+          expect(typeof user.avatar_url).toBe("string");
         });
       });
   });
@@ -431,7 +431,7 @@ describe("GET /api/users ", () => {
   });
 });
 
-describe("GET /api/articles/sort_by=created_at&order=asc", () => {
+describe("GET /api/articles?sort_by=created_at&order=asc", () => {
   test("200: Responds with the articles by the order desc", () => {
     return request(app)
       .get("/api/articles?sort_by=created_at&order=desc")
@@ -470,6 +470,50 @@ describe("GET /api/articles/sort_by=created_at&order=asc", () => {
         expect(body.articles).toBeSortedBy("created_at", {
           descending: false,
         });
+      });
+  });
+});
+describe("GET /api/articles?topics=mitch", () => {
+  test("200: Responds with articles filtered by topic", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(12);
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("200: Responds with articles filtered by topic", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(1);
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("cats");
+        });
+      });
+  });
+  test("200: Responds with articles filtered by various queries", () => {
+    return request(app)
+      .get("/api/articles?sort_by=created_at&order=asc&topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(12);
+        expect(body.articles).toBeSortedBy("created_at", { descending: false });
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("400: Responds with an error if query does not exist", () => {
+    return request(app)
+      .get("/api/articles?topic='market")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.error).toBe("Topic not found");
       });
   });
 });
