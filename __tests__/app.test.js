@@ -590,4 +590,13 @@ describe("GET /api/articles/:article_id?comment_count", () => {
         expect(body.msg).toBe("Bad Request - Invalid ID type");
       });
   });
+  // test("404: Responds with error when article_id does not exist", () => {
+  //   return request(app)
+  //     .get("/api/articles/9999?comment_count=true") 
+  //     .expect(404)
+  //     .then(({ body }) => {
+  //       console.log(body);
+  //       expect(body.msg).toBe("Article not found");
+  //     });
+  // });
 });
