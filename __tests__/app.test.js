@@ -62,7 +62,7 @@ describe("GET /api/articles/:articles_id", () => {
       .get("/api/articles/1")
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles).toEqual({
+        expect(body.articles).toMatchObject({
           article_id: 1,
           title: "Living in the shadow of a great man",
           topic: "mitch",
@@ -514,6 +514,17 @@ describe("GET /api/articles?topics=mitch", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.error).toBe("Topic not found");
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id", () => {
+  test("200: Responds with an object containing article details and optionally the comment_count based on query", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(typeof body.articles.comment_count).toBe("number");
       });
   });
 });
