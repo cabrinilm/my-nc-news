@@ -1,31 +1,18 @@
 const db = require("../db/connection");
 
-const fetchArticleById = (id, { comment_count }) => {
-  const checkIdExist = `SELECT 1 FROM articles WHERE article_id = $1;`;
+const fetchArticleById = (id) => {
+  let sqlQuery = `
+  SELECT articles.*, 
+         CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
+  FROM articles
+  LEFT JOIN comments ON comments.article_id = articles.article_id
+  WHERE articles.article_id = $1
+  GROUP BY articles.article_id
+`;
 
-  const checkIdPromise = db.query(checkIdExist, [id]).then(({ rows }) => {
-    if (rows.length === 0) {
-      return Promise.reject({ status: 404, msg: "Article not found" });
-    }
-  });
+  return db
+    .query(sqlQuery, [id])
 
-  let sqlQuery = `SELECT * FROM articles WHERE article_id=$1`;
-
-  if (comment_count === true) {
-    sqlQuery = `
-      SELECT articles.*, 
-             CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
-      FROM articles
-      LEFT JOIN comments ON comments.article_id = articles.article_id
-      WHERE articles.article_id = $1
-      GROUP BY articles.article_id
-    `;
-  }
-
-  return checkIdPromise
-    .then(() => {
-      return db.query(sqlQuery, [id]);
-    })
     .then(({ rows }) => {
       if (rows.length === 0) {
         return Promise.reject({ status: 404, msg: "Article not found" });
