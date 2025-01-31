@@ -517,3 +517,77 @@ describe("GET /api/articles?topics=mitch", () => {
       });
   });
 });
+
+describe("GET /api/articles/:article_id?comment_count", () => {
+  test("200: Responds with an object containing article details and optionally the comment_count based on query", () => {
+    return request(app)
+      .get("/api/articles/1?comment_count=true")
+      .expect(200)
+      .then(({ body }) => {
+      
+        expect(body.articles).toEqual(
+          expect.objectContaining({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          })
+        );
+      });
+  });
+  test("200: Responds with an object containing article details and optionally the comment_count based on query ", () => {
+    return request(app)
+      .get("/api/articles/1?comment_count=false")
+      .expect(200)
+      .then(({ body }) => {
+ 
+        expect(body.articles).toEqual(
+          expect.objectContaining({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+          })
+        );
+        expect(body.articles).not.toHaveProperty("comment_count");
+      });
+  });
+  test("200: Responds with an object containing article with query is not passed ", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+    
+        expect(body.articles).toEqual(
+          expect.objectContaining({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+          })
+        );
+        expect(body.articles).not.toHaveProperty("comment_count");
+      });
+  });
+  test("400: Responds with error when article_id is not a valid number", () => {
+    return request(app)
+      .get("/api/articles/swft?comment_count=true")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request - Invalid ID type");
+      });
+  });
+});
