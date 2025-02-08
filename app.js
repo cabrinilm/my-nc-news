@@ -2,7 +2,9 @@ const express = require("express");
 const app = express();
 const cors = require("cors")
 app.use(cors({
-  origin: '*',
+  origin: '*',  
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: 'Content-Type,Authorization'
 }));
 const { getTopics } = require("./controllers/topics.controllers");
 const { getApiEndpoins } = require("./controllers/api.controller");
