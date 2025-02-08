@@ -40,32 +40,35 @@ app.delete("/api/comments/:comment_id", deleteCommentById)
 
 
 app.use((err, req, res, next) => {
-  if (err.code === "22P02") {
+  if (err.code === "22P02") {  
     return res.status(400).send({ msg: "Bad Request - Invalid ID type" });
   }
-  next(err);
+  next(err); 
 });
 
+
 app.use((err, req, res, next) => {
-  if (err.status && err.message) {
+  if (err.status === 404 && err.msg) { 
+    return res.status(404).send({ error: err.msg }); 
+  }
+  if (err.status && err.message) {  
     return res.status(err.status).send({ error: err.message });
   }
-  next(err);
+  next(err); 
 });
 
+
 app.use((err, req, res, next) => {
-  console.error("Erro detectado:", err);
+  console.error("Error ", err);
+  
   if (res.headersSent) {
-   
-    return next(err);
+    return next(err);  
   }
+  
+  
   res.status(500).send({ error: "Internal Server Error" });
 });
 
-app.use((err, req, res, next) => {
-  const message = err.message || "Something went wrong!";
-  res.status(500).send({ error: message });
-});
 
 app.all("*", (req, res) => {
   res.status(404).send({ error: "Endpoint not found" });

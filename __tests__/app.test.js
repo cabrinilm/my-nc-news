@@ -78,9 +78,9 @@ describe("GET /api/articles/:articles_id", () => {
   test("404: Responds with an error if the id is not available in articles", () => {
     return request(app)
       .get("/api/articles/200")
-      .expect(500)
+      .expect(404)
       .then(({ body }) => {
-        expect(body.error).toBe("Internal Server Error");
+        expect(body.error).toBe("Article not found");
       });
   });
 
