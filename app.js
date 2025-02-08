@@ -56,6 +56,7 @@ app.use((err, req, res, next) => {
 app.use((err, req, res, next) => {
 
   if (res.headersSent) {
+   
     return next(err);
   }
   res.status(500).send({ error: "Internal Server Error" });
