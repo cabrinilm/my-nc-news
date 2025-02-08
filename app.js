@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
 const cors = require("cors")
-app.use(cors())
+app.use(cors({
+  origin: '*',
+}));
 const { getTopics } = require("./controllers/topics.controllers");
 const { getApiEndpoins } = require("./controllers/api.controller");
 const { getUsers } = require("./controllers/users.controller")
