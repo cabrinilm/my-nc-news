@@ -54,7 +54,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-
+  console.error("Erro detectado:", err);
   if (res.headersSent) {
    
     return next(err);
