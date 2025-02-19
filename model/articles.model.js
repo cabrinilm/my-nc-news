@@ -1,5 +1,29 @@
 const db = require("../db/connection");
 
+
+const updateArticleVotes = (article_id, { inc_votes }) => {
+  const query = `
+    UPDATE articles
+    SET votes = votes + $1
+    WHERE article_id = $2
+    RETURNING *;
+  `;
+
+  const values = [inc_votes, article_id];
+
+  return db.query(query, values)
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ msg: "Article not found", status: 404 });
+      }
+      return rows[0]; 
+    });
+};
+
+module.exports = {
+  updateArticleVotes,
+};
+
 const fetchArticleById = (id) => {
   let sqlQuery = `
   SELECT articles.*, 
@@ -167,4 +191,5 @@ module.exports = {
   fetchCommentsFromArticles,
   addComment,
   updateArticlesById,
+  updateArticleVotes
 };

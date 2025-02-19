@@ -528,3 +528,108 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 });
+describe("GET /api/articles/:article_id", () => {
+  it("should return an article by id", async () => {
+    const res = await request(app)
+      .get("/api/articles/1")
+      .expect(200);
+
+    expect(res.body.articles).toHaveProperty("article_id", 1);
+    expect(res.body.articles).toHaveProperty("title");
+    expect(res.body.articles).toHaveProperty("author");
+  });
+
+  it("should return 404 if article not found", async () => {
+    const res = await request(app)
+      .get("/api/articles/999")
+      .expect(404);
+  
+    expect(res.body).toHaveProperty("error", "Article not found"); 
+  });
+});
+
+
+
+
+
+describe("GET /api/articles/:article_id/comments", () => {
+  it("should return comments for an article", async () => {
+    const res = await request(app)
+      .get("/api/articles/1/comments")
+      .expect(200);
+
+    expect(Array.isArray(res.body.comments)).toBe(true);
+    if (res.body.comments.length > 0) {
+      expect(res.body.comments[0]).toHaveProperty("comment_id");
+      expect(res.body.comments[0]).toHaveProperty("author");
+    }
+  });
+
+  it("should return 404 if article not found", async () => {
+    const res = await request(app)
+      .get("/api/articles/999/comments")
+      .expect(404);
+  
+    expect(res.body).toHaveProperty("error", "Article not found"); 
+  });
+});
+describe("PATCH /api/articles/:article_id", () => {
+  let articleId;
+  const increment = 5; 
+
+  beforeAll(async () => {
+    
+    const res = await request(app)
+      .post("/api/articles")
+      .send({
+        title: "Test Article",
+        author: "testuser",
+        body: "This is a test article",
+      });
+
+   
+    articleId = res.body.article_id;
+  });
+
+  it("should update the votes for an article", async () => {
+  
+    return  request(app)
+      .patch(`/api/articles/3`)
+      .send({ inc_votes: 100 })
+      .expect(200)
+      .then(({body}) => {
+     
+  expect(body.article.votes).toBe(100);
+
+ }) 
+  
+  });
+
+  it("should return 404 if article not found", async () => {
+    const nonExistentArticleId = 9999;
+
+    const res = await request(app)
+      .patch(`/api/articles/${nonExistentArticleId}`)
+      .send({ inc_votes: 1 })
+      .expect(404);
+
+    expect(res.body).toHaveProperty("error", "Article not found");
+  });
+
+  it("should return 400 if inc_votes is missing or invalid", async () => {
+   
+    const resMissing = await request(app)
+      .patch(`/api/articles/${articleId}`)
+      .send({}) 
+
+    expect(resMissing.body).toHaveProperty("error", "Bad Request");
+
+    
+    const resInvalid = await request(app)
+      .patch(`/api/articles/${articleId}`)
+      .send({ inc_votes: "invalid" }) 
+      .expect(400);
+
+    expect(resInvalid.body).toHaveProperty("error", "Bad Request");
+  });
+});
