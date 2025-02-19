@@ -1,11 +1,21 @@
 const express = require("express");
 const app = express();
 const cors = require("cors")
-app.use(cors({
-  origin: '*',  
-  methods: 'GET,POST,PUT,DELETE',
-  allowedHeaders: 'Content-Type,Authorization'
-}));
+
+
+
+app.use(
+  cors({
+    origin: "*", 
+    methods: ["GET", "POST", "PATCH", "DELETE"], 
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
+
+
+
+
 const { getTopics } = require("./controllers/topics.controllers");
 const { getApiEndpoins } = require("./controllers/api.controller");
 const { getUsers } = require("./controllers/users.controller")
