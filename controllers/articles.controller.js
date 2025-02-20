@@ -18,7 +18,18 @@ const getArticlesById = (req, res, next) => {
 };
 
 const getAllArticles = (req, res, next) => {
-  const { sort_by, order, topic } = req.query;
+  const { sort_by = 'created_at', order = 'desc', topic } = req.query;
+
+  // Validar os campos de ordenação
+  const validSortFields = ['created_at', 'title', 'author', 'votes'];
+  if (!validSortFields.includes(sort_by)) {
+    return res.status(400).send({ error: 'Invalid input' });
+  }
+
+  // Validar a ordem
+  if (order !== 'asc' && order !== 'desc') {
+    return res.status(400).send({ error: 'Invalid Order' });
+  }
 
   return fetchArticle({ sort_by, order, topic })
     .then((articles) => {
@@ -26,6 +37,7 @@ const getAllArticles = (req, res, next) => {
     })
     .catch(next);
 };
+
 
 const getCommentsFromArticles = (req, res, next) => {
   const { article_id } = req.params;

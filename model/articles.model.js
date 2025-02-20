@@ -47,9 +47,10 @@ const fetchArticleById = (id) => {
 };
 
 const fetchArticle = ({ sort_by = "created_at", order = "desc", topic }) => {
-  const validSortBy = ["created_at", "topic"];
+  const validSortBy = ["created_at", "topic", "title", "votes"];
   const validOrderBy = ["asc", "desc"];
 
+  
   if (!validSortBy.includes(sort_by) || !validOrderBy.includes(order)) {
     return Promise.reject({
       status: 400,
@@ -73,6 +74,7 @@ const fetchArticle = ({ sort_by = "created_at", order = "desc", topic }) => {
 
   const queryValues = [];
 
+  
   const checkTopicExistsQuery = `SELECT 1 FROM topics WHERE slug = $1;`;
 
   const checkTopicPromise = topic
@@ -89,10 +91,10 @@ const fetchArticle = ({ sort_by = "created_at", order = "desc", topic }) => {
       queryValues.push(topic);
     }
 
+ 
     sqlQuery += `
       GROUP BY articles.article_id
-      ORDER BY ${validSortBy.includes(sort_by) ? sort_by : "created_at"} 
-      ${validOrderBy.includes(order) ? order : "desc"};
+      ORDER BY ${sort_by} ${order};
     `;
 
     return db.query(sqlQuery, queryValues).then(({ rows }) => rows);
