@@ -20,13 +20,13 @@ const getArticlesById = (req, res, next) => {
 const getAllArticles = (req, res, next) => {
   const { sort_by = 'created_at', order = 'desc', topic } = req.query;
 
-  // Validar os campos de ordenação
-  const validSortFields = ['created_at', 'title', 'author', 'votes'];
+
+  const validSortFields = ['created_at', 'title', 'author', 'votes', 'comment_count'];
   if (!validSortFields.includes(sort_by)) {
     return res.status(400).send({ error: 'Invalid input' });
   }
 
-  // Validar a ordem
+  
   if (order !== 'asc' && order !== 'desc') {
     return res.status(400).send({ error: 'Invalid Order' });
   }
