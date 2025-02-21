@@ -18,14 +18,14 @@ app.use(
 
 const { getTopics } = require("./controllers/topics.controllers");
 const { getApiEndpoins } = require("./controllers/api.controller");
-const { getUsers } = require("./controllers/users.controller")
+const { getUsers, createUser } = require("./controllers/users.controller")
 const {
   getArticlesById,
   getAllArticles,
   getCommentsFromArticles,
   postComment,
   patchArticlesById,
-  patchArticleVotes
+  patchArticleVotes,
 } = require("./controllers/articles.controller");
 const { deleteCommentById } = require("./controllers/comments.controller")
 app.use(express.json());
@@ -34,6 +34,7 @@ app.get("/api", getApiEndpoins);
 
 app.get("/api/topics", getTopics);
 
+app.post("/api/users", createUser)
 
 app.get("/api/users",  getUsers)
 
