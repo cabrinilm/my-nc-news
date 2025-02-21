@@ -633,3 +633,59 @@ describe("PATCH /api/articles/:article_id", () => {
     expect(resInvalid.body).toHaveProperty("error", "Bad Request");
   });
 });
+
+describe("POST /api/users", () => {
+  test("201: Should create a new user", () => {
+    const newUser = {
+      username: "newuser",
+      name: "New User",
+      avatar_url: "https://example.com/avatar.jpg",
+    };
+  
+    return request(app)
+      .post("/api/users")
+      .send(newUser)
+      .expect(201)
+      .then(({ body }) => {
+        
+        expect(body).toMatchObject({
+          user: {
+          username: "newuser",
+          name: "New User",
+          avatar_url: "https://example.com/avatar.jpg",
+          },
+        });
+      });
+  });
+  it('should create a new user without avatar_url', () => {
+    const newUser = {
+      username: 'newuser',
+      name: 'New User',
+    };
+  
+    return request(app)
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.user).toMatchObject({
+          username: newUser.username,
+          name: newUser.name,
+        });
+      });
+  });
+  it('should return an error if username is missing', () => {
+    return request(app)
+      .post('/api/users')
+      .send({
+        name: 'New User',
+        avatar_url: 'https://example.com/avatar.jpg'
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body).toMatchObject({
+          error: 'Username and name are required'
+        });
+      });
+  });
+});

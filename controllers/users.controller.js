@@ -1,4 +1,4 @@
-const { fetchUsers } = require("../model/users.model");
+const { fetchUsers,insertUser } = require("../model/users.model");
 
 const getUsers = (req, res, next) => {
   return fetchUsers()
@@ -10,23 +10,21 @@ const getUsers = (req, res, next) => {
 
 
 const createUser = (req, res, next) => {
-
-  const { username } = req.body;
+  const { username, name, avatar_url } = req.body;
   
-  if(!username) {
-
-    return res.status(400).send({ error:"Insert name user please"});
-
+ 
+  
+  if (!username || !name) {
+    return res.status(400).send({ error: "Username and name are required" });
   }
-  return Promise.resolve()
-  .then(() => {
-    res.status(201).send({message: "User created with sucess"});
-  })
- .catch(next)
 
-
-}
-
+  insertUser(username, name, avatar_url)
+    .then(user => {
+     
+      res.status(201).send({ user : user.rows[0]});
+    })
+    .catch(next);
+};
 
 module.exports = { getUsers, createUser };
 
